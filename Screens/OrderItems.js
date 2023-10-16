@@ -1,187 +1,157 @@
 import React, { useState } from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { useRoute } from '@react-navigation/native';
 import items from '../Propeties/Items';
-import { Picker } from '@react-native-picker/picker';
+// import { Picker } from '@react-native-picker/picker';
 import COLORS from '../Propeties/colors';
-import { TextInput } from 'react-native-gesture-handler';
-
+import { ScrollView, TextInput } from 'react-native-gesture-handler';
 
 const OrderItems = ({ navigation }) => {
 
   const route = useRoute();
-  const { supplier, orderId, contactNumber, orderDate } = route.params;
-  const [selectedItem1, setSelectedItem1] = useState(null);
-  const [quantity1, setQuantity1] = useState('');
-  const [selectedItem2, setSelectedItem2] = useState(null);
-  const [quantity2, setQuantity2] = useState('');
-  const [selectedItem3, setSelectedItem3] = useState(null);
-  const [quantity3, setQuantity3] = useState('');
-  const [totalPrice, setTotalPrice] = useState(0); // Initialize total price with 0
+  const { supplier, contactNumber, companyName } = route.params;
+
+  console.log('selectedProducts:', supplier);
+  console.log('quantities:', contactNumber);
+  console.log('totalPrice:', companyName);
+
+ const [totalPrice, setTotalPrice] = useState(0);
+
+ const [productInputs, setProductInputs] = useState(
+  items.map((item) => ({ product: item.product, quantity: '' }))
+);
+
+  const handleQuantityChange = (text, index) => {
+    const updatedInputs = [...productInputs];
+    updatedInputs[index].quantity = text;
+    setProductInputs(updatedInputs);
+    calculateTotalPrice(updatedInputs);
+  };
+
 
   const calculateTotalPrice = () => {
     let total = 0;
-
-    // Calculate total for the first item
-    if (selectedItem1 && quantity1) {
-      const item = itemsArray.find((item) => item.id === selectedItem1);
+    for (let i = 0; i < productInputs.length; i++) {
+      const productInput = productInputs[i];
+      const item = items.find((item) => item.product === productInput.product);
       if (item) {
-        total += item.price * parseInt(quantity1, 10);
+        const quantity = parseInt(productInput.quantity, 10);
+        if (!isNaN(quantity)) {
+          total += item.price * quantity;
+        }
       }
     }
-
-    // Calculate total for the second item
-    if (selectedItem2 && quantity2) {
-      const item = itemsArray.find((item) => item.id === selectedItem2);
-      if (item) {
-        total += item.price * parseInt(quantity2, 10);
-      }
-    }
-
-    // Calculate total for the third item
-    if (selectedItem3 && quantity3) {
-      const item = itemsArray.find((item) => item.id === selectedItem3);
-      if (item) {
-        total += item.price * parseInt(quantity3, 10);
-      }
-    }
-
-    // Update the state with the total price
     setTotalPrice(total);
   };
 
   const handleNextButtonPress = () => {
-    const orderDetails = {
-      supplier,
-      orderId,
-      contactNumber,
-      orderDate,
-    };
-
-    const orderedItems = [
-      { item: selectedItem1, quantity: quantity1 },
-      { item: selectedItem2, quantity: quantity2 },
-      { item: selectedItem3, quantity: quantity3 },
-    ];
-
     navigation.navigate('OrderConfirmation', {
-      orderDetails,
-      orderedItems,
+      supplier,
+      contactNumber,
+      companyName,
+      selectedProducts: productInputs,
       total: totalPrice,
     });
   };
 
-
-  return (
-    <View>
-        <View>
-            <Picker
-                selectedValue={selectedItem1}
-                onValueChange={(itemValue) => setSelectedItem1(itemValue)}
-                style={styles.input}
-            >
-                <Picker.Item label="Select an item" value={null} />
-                {items.map((item) => (
-                    <Picker.Item label={item.name} value={item.id} key={item.id} />
-                ))}
-            </Picker>
-            <TextInput
+  return(
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <StatusBar />
+        <View style={styles.card}>
+          <Text style={styles.heading}>Select Products and Quantities</Text>
+          {productInputs.map((input, index) => (
+            <View key={index} style={styles.productContainer}>
+              <TextInput
+                style={styles.productInput}
+                placeholder="Product"
+                value={input.product}
+                editable={false} // Make it non-editable
+              />
+              <TextInput
+                style={styles.quantityInput}
                 placeholder="Quantity"
-                onChangeText={(text) => setQuantity1(text)}
-                value={quantity1}
-                style={styles.input}
                 keyboardType="numeric"
-            />
+                value={input.quantity}
+                onChangeText={(text) => handleQuantityChange(text, index)}
+              />
+            </View>
+          ))}
+          <Text style={styles.totalPrice}>Total Price: {totalPrice.toFixed(2)}</Text>
+          <TouchableOpacity onPress={handleNextButtonPress} style={styles.button}>
+          <Text style={styles.buttonText}>Place Order</Text>
+          </TouchableOpacity>
         </View>
-        <View>
-            <Picker
-                selectedValue={selectedItem2}
-                onValueChange={(itemValue) => setSelectedItem2(itemValue)}
-                style={styles.input}
-            >
-                <Picker.Item label="Select an item" value={null} />
-                {items.map((item) => (
-                    <Picker.Item label={item.name} value={item.id} key={item.id} />
-                ))}
-            </Picker>
-            <TextInput
-                placeholder="Quantity"
-                onChangeText={(text) => setQuantity2(text)}
-                value={quantity2}
-                style={styles.input}
-                keyboardType="numeric"
-            />
-        </View>
-        <View>
-            <Picker
-                selectedValue={selectedItem3}
-                onValueChange={(itemValue) => setSelectedItem3(itemValue)}
-                style={styles.input}
-            >
-                <Picker.Item label="Select an item" value={null} />
-                {items.map((item) => (
-                    <Picker.Item label={item.name} value={item.id} key={item.id} />
-                ))}
-            </Picker>
-            <TextInput
-                placeholder="Quantity"
-                onChangeText={(text) => setQuantity3(text)}
-                value={quantity3}
-                style={styles.input}
-                keyboardType="numeric"
-            />
-        </View>
-        <Text style={{ textAlign: 'center', fontSize: 16 }}>
-            Total Price: ${totalPrice.toFixed(2)}
-      </Text>
-        <TouchableOpacity onPress={handleNextButtonPress} style={styles.button}>
-        <Text style={styles.buttonText}>Next</Text>
-        </TouchableOpacity>
+      </ScrollView>
+      
     </View>
   )
+  
 }
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 20,
-        backgroundColor: '#fff',
-    },
-    heading: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        textAlign: 'center',
-    },
-    label: {
-        marginTop: 10,
-        marginLeft: 15,
-    },
-    input: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        margin: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
-        padding: 10,
-        borderWidth: 1,
-        borderColor: COLORS.dark,
-        borderRadius: 10,
-        color: COLORS.dark,
-    },
-    button: {
-        backgroundColor: COLORS.primary,
-        padding: 10,
-        borderRadius: 10,
-        margin: 10,
-        marginTop: 30
-      },
-      buttonText: {
-        color: COLORS.white,
-        fontSize: 20,
-        fontWeight: 'bold',
-        textAlign: 'center'
-      },
-    // You can add more styles for the button, labels, or other components as needed.
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#fff',
+    justifyContent: 'center'
+
+  },
+  card: {
+    backgroundColor: COLORS.light,
+    padding: 20,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  heading: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  productContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  productInput: {
+    flex: 2,
+    marginRight: 10,
+    borderWidth: 1,
+    color: COLORS.dark,
+    borderColor: COLORS.dark,
+    borderRadius: 5,
+    padding: 5,
+    fontSize: 15
+  },
+  quantityInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: COLORS.dark,
+    borderRadius: 5,
+    padding: 5,
+  },
+  totalPrice: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  button: {
+    backgroundColor: COLORS.primary,
+    padding: 10,
+    borderRadius: 10,
+    margin: 10,
+  },
+  buttonText: {
+    color: COLORS.white,
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
 });
 
 export default OrderItems

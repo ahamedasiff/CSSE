@@ -1,31 +1,27 @@
 const items = [
     {
       id: '1',
-      name: 'Ladder',
-    //   quantity: 'Habarana.',
-      price: 2000,
+      product: 'Ladder',
+      qty: "4",
+      price: 12000,
     },
     {
       id: '2',
-      name: 'Cement',
-    //   quantity: 'Habarana.',
-      price: 2000,
+      product: 'Cement 50KG',
+      qty: "4",
+      price: 3500,
     },
     {
       id: '3',
-      name: 'Mixer',
-    //   quantity: 'Habarana.',
-      price: 2000,},
+      product: 'Tile Adhesive 25KG',
+      qty: "4",
+      price: 2400,
+    },
     {
       id: '4',
-      name: 'Sand',
-    //   quantity: 'Habarana.',
-      price: 2000,},
-    {
-        id: '5',
-      name: 'Metal',
-    //   quantity: 'Habarana.',
-      price: 2000,
+      product: 'Metal',
+      qty: "10",
+      price: 8000,
     }
   ];
   
